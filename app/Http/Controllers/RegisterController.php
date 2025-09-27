@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Picture;
 use App\Models\User;
 use Hash;
 use Illuminate\Http\Request;
@@ -20,17 +21,23 @@ class RegisterController extends Controller
             'password' => 'required|min:8|confirmed',
             'picture' => 'nullable|image|max:2048'
         ]);
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
+        ]);
         if ($request->hasFile('picture')) {
             $path = $request->file('picture')->store('avatars', 'public');
             $data['avatar'] = $path;
+
+            Picture::create([
+                'path' => $data['avatar'],
+                'picturable_id' => 1,
+                'picturable_type' => 'App\Users',
+            ]);
         }
-        $user = User::create([
-            'name'=> $data['name'],
-            'email'=> $data['email'],
-            'password'=> Hash::make($data['password']),
-            'picture'=> $data['avatar']??null,
-        ]);
-        return redirect()->route('home')->with('success','Account created');
+        auth()->login($user);
+        return redirect()->route('home')->with('success', 'Account created');
     }
 
 }
