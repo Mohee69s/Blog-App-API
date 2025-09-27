@@ -50,4 +50,7 @@ class User extends Authenticatable
     public function Posts(){
         return $this->hasMany(Post::class);
     }
+    public function Pictures(){
+        return $this->morphMany('App\Pictures', 'Picturable');    
+    }
 }
